@@ -1,5 +1,5 @@
 import math
-import pygame
+from pygame import Vector2
 from dataclasses import dataclass
 
 sin60 = math.sqrt(3)/2
@@ -15,6 +15,9 @@ class Vex:
 
     def y(self):
         return self.a * sin60
+
+    def Vector2(self):
+        return Vector2(self.x(), self.y())
 
     def __add__(self, other):
         return Vex(self.a + other.a, self.b + other.b)

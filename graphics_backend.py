@@ -21,8 +21,7 @@ half_tile = hexvex.Vex(0.5, 0.5)
 game_rect = pygame.Rect(80, 0, screen_width - 80, screen_height)
 sidebar_rect = pygame.Rect(0, 0, 80, screen_height)
 
-grid_origin = game_rect.center - \
-    hexvex.Vex(grid_a-1, grid_b-1).Vector2() / 2 * cell_parameter
+grid_origin = game_rect.center - hexvex.Vex(grid_a-1, grid_b-1).Vector2() / 2 * cell_parameter
 #Translated half a cell to the positive since hexagons are centred
 
 
@@ -41,10 +40,20 @@ for point in p:
 pygame.draw.polygon(hexagon, (255, 255, 255), p)
 
 
+full_arrow = pygame.image.load("arrow.png")
+unit_arrow = pygame.transform.scale(full_arrow, (int(hex_width), int(hex_width*770/1920)))
+unit_arrow.set_colorkey((0,0,0))
+
 def get_hexagon(color):
     colored_hex = hexagon.copy()
     colored_hex.fill(color, special_flags=pygame.BLEND_RGB_MULT)
     return colored_hex
+
+
+def get_arrow(color, angle, size):
+    new_arrow = pygame.transform.rotozoom(unit_arrow, -angle, size)
+    new_arrow.fill(color, special_flags=pygame.BLEND_RGB_MULT)
+    return new_arrow
 
 
 def screen_to_hex_space(screen_pos):
@@ -68,3 +77,10 @@ def draw_scalar_field(screen, field, scale_start, scale_end, color_start, color_
             color = lerp_color(color_end, color_start, frac)
             screen.blit(get_hexagon(color), hex_to_screen_space(hexvex.Vex(i, j)) - half_hex)
             #Translated half a cell to the negative so the hexagons are centred
+
+def draw_vector_field(screen, field, max_size_magnitude):
+    for i in range(grid_a):
+        for j in range(grid_b):
+            polar = field.hexes[i][j].Vector2().as_polar() # (magnitude, argument)
+            arrow = get_arrow((255,255,255), polar[1], polar[0] / max_size_magnitude)
+            screen.blit(arrow, hex_to_screen_space(hexvex.Vex(i, j)) - (arrow.get_width()/2, arrow.get_height()/2))

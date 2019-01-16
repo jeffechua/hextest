@@ -10,6 +10,7 @@ from pygame import Vector2
 
 potential = ScalarHexField(grid_a, grid_b)
 monopoles = {}
+force = VectorHexField(grid_a, grid_b)
 
 pygame.init()
 clock = pygame.time.Clock()
@@ -19,9 +20,13 @@ pygame.draw.rect(screen, (100, 100, 100), sidebar_rect)
 
 done = False
 
-def redraw(): draw_scalar_field(screen, potential, -50, 50, pygame.Color(0,0,255), pygame.Color(255,0,0)),
+def recalculate_redraw():
+    screen.fill((0,0,0), game_rect)
+    potential.grad(force)
+    draw_scalar_field(screen, potential, -50, 50, pygame.Color(0,0,255), pygame.Color(255,0,0))
+    draw_vector_field(screen, force, 30)
 
-redraw()
+recalculate_redraw()
 
 while not done:
     for event in pygame.event.get():
@@ -33,9 +38,9 @@ while not done:
                 del monopoles[tile]
             else:
                 if event.button==1:
-                    monopoles[tile] = Monopole(tile, 30, potential, redraw)
+                    monopoles[tile] = Monopole(tile, 30, potential, recalculate_redraw)
                 else:
-                    monopoles[tile] = Monopole(tile, -30, potential, redraw)
+                    monopoles[tile] = Monopole(tile, -30, potential, recalculate_redraw)
         if event.type == pygame.QUIT:
             done = True
 

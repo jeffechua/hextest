@@ -6,9 +6,9 @@ class HexMask:
     def __init__(self, a, b):
         self.a = a
         self.b = b
-        self.hexes = [[False]*b] + [None]*(a-2) + [[False]*b]
-        for i in range(1,a-1):
-            self.hexes[i] = [False] + [True]*(b-2) + [False]
+        self.hexes = [None]*a
+        for i in range(a):
+            self.hexes[i] = [True]*b
 
     def __iand__(self, other):
         for i in range(self.a):
@@ -25,7 +25,7 @@ class HexMask:
             for j in range(self.b):
                 self.hexes[i][j] = not self.hexes[i][j]
 
-_mp_const = 2
+_mp_const = 3
 
 class Monopole:
 
@@ -165,12 +165,12 @@ class VectorHexField:
     def clear(self):
         for i in range(self.a):
             for j in range(self.b):
-                self.hexes[i][j]=0
+                self.hexes[i][j] = Vex(0,0)
     
     def clone(self, other):
         for i in range(self.a):
             for j in range(self.b):
-                self.hexes[i][j]=other.hexes[i][j]
+                self.hexes[i][j] = other.hexes[i][j]
 
     def apply(self, scalar_field, destination):
         destination.clone(scalar_field)
@@ -192,6 +192,7 @@ class VectorHexField:
                     if scalar_field.mask.hexes[d2.x][d2.j]:
                         destination.hexes[i+d2.x][j+d2.j] += m2
                         destination.hexes[i][j] -= m2
+
 
 class ScalarHexField:
 
@@ -247,24 +248,28 @@ class ScalarHexField:
                 if self.mask[i][j]:
                     self.hexes[i][j] = -self.hexes[i][j]
 
-    def grad(self):
-        gradField = VectorHexField(self.a, self.b, self.mask)
+    def grad(self, destination = None):
+        gradField = destination
+        if gradField == None:
+            VectorHexField(self.a, self.b, self.mask)
+        else:
+            gradField.clear()
         for i in range(self.a):
             for j in range(self.b):
                 if self.mask.hexes[i][j]:
                     for d in range(6):
                         k = i + dirs[d].a
                         l = j + dirs[d].b
-                        if self.mask.hexes[k][l]:
+                        if self.validHex(k,l):
                             gradField.hexes[i][j] += (self.hexes[k][l] - self.hexes[i][j]) * dirs[d]
         return gradField
                     
     def clear(self):
         for i in range(self.a):
             for j in range(self.b):
-                self.hexes[i][j]=0
+                self.hexes[i][j] = 0
     
     def clone(self, other):
         for i in range(self.a):
             for j in range(self.b):
-                self.hexes[i][j]=other.hexes[i][j]
+                self.hexes[i][j] = other.hexes[i][j]

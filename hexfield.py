@@ -13,12 +13,12 @@ class HexMask:
     def __iand__(self, other):
         for i in range(self.a):
             for j in range(self.b):
-                self.hexes[i][j] = self.hexes[i][j] & other.hexes[i][j]
+                self.hexes[i][j] = self.hexes[i][j] and other.hexes[i][j]
 
     def __ior__ (self, other):
         for i in range(self.a):
             for j in range(self.b):
-                self.hexes[i][j] = self.hexes[i][j] | other.hexes[i][j]
+                self.hexes[i][j] = self.hexes[i][j] or other.hexes[i][j]
 
     def __neg__ (self):
         for i in range(self.a):
@@ -76,7 +76,7 @@ class VectorHexField:
         return self.validHex(vex.a, vex.b)
 
     def validHex(self, a, b):
-        if a < 0 | a >= self.a | b<0 | b >= self.b:
+        if a < 0 or a >= self.a or b<0 or b >= self.b:
             return False
         elif not self.mask.hexes[a][b]:
             return False
@@ -161,7 +161,7 @@ class ScalarHexField:
         return self.validHex(vex.a, vex.b)
 
     def validHex(self, a, b):
-        if a < 0 | a >= self.a | b<0 | b >= self.b:
+        if a < 0 or a >= self.a or b<0 or b >= self.b:
             return False
         elif not self.mask.hexes[a][b]:
             return False

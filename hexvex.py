@@ -4,6 +4,11 @@ from dataclasses import dataclass
 
 sin60 = math.sqrt(3)/2
 
+def vex_from_xy (x, y):
+    a = y / sin60
+    b = x + a / 2
+    return Vex(a, b)
+
 @dataclass(frozen=True)
 class Vex:
 
@@ -38,7 +43,36 @@ class Vex:
         return Vex(-self.a, -self.b)
     
     def __abs__(self):
-        return math.sqrt(self.x() * self.x() + self.y() * self.y())
+        return math.sqrt(self.sqr_mag())
+
+    def sqr_mag(self):
+        return self.x() * self.x() + self.y() * self.y()
+
+    def round(self):
+
+        a_floor = math.floor(self.a)
+        b_floor = math.floor(self.b)
+        trim_a = self.a - a_floor
+        trim_b = self.b - b_floor
+        trim = Vex(trim_a,trim_b)
+        trim_x = trim.x()
+
+        if trim_x < 0:
+            if trim.sqr_mag() < (trim-dirs[0]).sqr_mag():
+                return Vex(a_floor, b_floor)
+            else:
+                return Vex(a_floor, b_floor) + dirs[0]
+        elif trim_x < 0.5:
+            if trim.sqr_mag() < (trim-dirs[1]).sqr_mag():
+                return Vex(a_floor, b_floor)
+            else:
+                return Vex(a_floor, b_floor) + dirs[1]
+        else:
+            if (trim-dirs[1]).sqr_mag() < (trim-dirs[2]).sqr_mag():
+                return Vex(a_floor, b_floor) + dirs[1]
+            else:
+                return Vex(a_floor, b_floor) + dirs[2]
+
 
     def resolve_closest_axes (self):
 

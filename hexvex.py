@@ -77,7 +77,7 @@ class Vex:
     def resolve_closest_axes (self):
 
         axes = 0
-        """If axes = n, then the closest directions are dir[n] and dir[n+1]"""
+        #If axes = n, then the closest directions are dir[n] and dir[n+1]
         
         if self.b > 0:
             if self.a > 0:

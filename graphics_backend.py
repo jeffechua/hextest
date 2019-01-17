@@ -78,9 +78,21 @@ def draw_scalar_field(screen, field, scale_start, scale_end, color_start, color_
             screen.blit(get_hexagon(color), hex_to_screen_space(hexvex.Vex(i, j)) - half_hex)
             #Translated half a cell to the negative so the hexagons are centred
 
+def draw_scalar_field_circles(screen, field, scale_start, scale_end, max_radius, color = (0,0,0)):
+    for i in range(grid_a):
+        for j in range(grid_b):
+            radius = max_radius * (field.hexes[i][j]-scale_start) / (scale_end-scale_start)
+            if radius < 0: radius=0
+            elif radius > max_radius: radius = max_radius
+            pos = hex_to_screen_space(hexvex.Vex(i, j))
+            pygame.draw.circle(screen, color, (int(pos.x), int(pos.y)), int(radius))
+
 def draw_vector_field(screen, field, max_size_magnitude):
     for i in range(grid_a):
         for j in range(grid_b):
-            polar = field.hexes[i][j].Vector2().as_polar() # (magnitude, argument)
-            arrow = get_arrow((255,255,255), polar[1], polar[0] / max_size_magnitude)
-            screen.blit(arrow, hex_to_screen_space(hexvex.Vex(i, j)) - (arrow.get_width()/2, arrow.get_height()/2))
+            if hexvex.Vex(i,j) in field.minima:
+                pass
+            else:
+                polar = field.hexes[i][j].Vector2().as_polar() # (magnitude, argument)
+                arrow = get_arrow((255,255,255), polar[1], polar[0] / max_size_magnitude)
+                screen.blit(arrow, hex_to_screen_space(hexvex.Vex(i, j)) - (arrow.get_width()/2, arrow.get_height()/2))

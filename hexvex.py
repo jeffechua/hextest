@@ -74,7 +74,10 @@ class Vex:
                 return Vex(a_floor, b_floor) + dirs[2]
 
 
-    def resolve_closest_axes (self):
+    def true_resolve(self, dir):
+        return dir.Vector2().dot(self.Vector2())
+
+    def resolve_closest_axes(self):
 
         axes = 0
         #If axes = n, then the closest directions are dir[n] and dir[n+1]

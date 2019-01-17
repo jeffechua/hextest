@@ -111,6 +111,7 @@ class VectorHexField:
     def __init__(self, a, b, mask = None):
         self.a = a
         self.b = b
+        self.minima = []
         self.hexes = [None]*a
         for i in range(a):
             self.hexes[i] = [None]*b
@@ -135,73 +136,92 @@ class VectorHexField:
     def __iadd__(self, other):
         for i in range(self.a):
             for j in range(self.b):
-                if self.mask[i][j]:
+                if self.mask.hexes[i][j]:
                     self.hexes[i][j] += other.hexes[i][j]
+        return self
 
     def __isub__(self, other):
         for i in range(self.a):
             for j in range(self.b):
-                if self.mask[i][j]:
+                if self.mask.hexes[i][j]:
                     self.hexes[i][j] -= other.hexes[i][j]
+        return self
 
     def __imul__(self, factor):
         for i in range(self.a):
             for j in range(self.b):
-                if self.mask[i][j]:
+                if self.mask.hexes[i][j]:
                     self.hexes[i][j] *= factor
+        return self
                     
     def __itruediv__(self, factor):
         for i in range(self.a):
             for j in range(self.b):
-                if self.mask[i][j]:
+                if self.mask.hexes[i][j]:
                     self.hexes[i][j] /= factor
+        return self
                     
     def __neg__(self):
         for i in range(self.a):
             for j in range(self.b):
-                if self.mask[i][j]:
+                if self.mask.hexes[i][j]:
                     self.hexes[i][j] = -self.hexes[i][j]
+        return self
               
     def clear(self):
+        self.minima.clear()
         for i in range(self.a):
             for j in range(self.b):
                 self.hexes[i][j] = Vex(0,0)
     
-    def clone(self, other):
+    def clone(self, other, multiplier = 1):
         for i in range(self.a):
             for j in range(self.b):
-                self.hexes[i][j] = other.hexes[i][j]
+                self.hexes[i][j] = other.hexes[i][j] * multiplier
 
-    def apply(self, scalar_field, destination):
+    def apply_to(self, scalar_field, destination, multiplier):
         destination.clone(scalar_field)
         for i in range(self.a):
             for j in range(self.b):
                 if scalar_field.mask.hexes[i][j]:
-                    resolution = self.hexes[i][j].resolve_closest_axes
-                    d1 = resolution[0][0]
-                    d2 = resolution[1][0]
-                    m1 = resolution[0][1]
-                    m2 = resolution[1][1]
-                    if m1+m2>scalar_field.hexes[i][j]:
-                        f = scalar_field.hexes[i][j]/(m1+m2)
-                        m1 *= f
-                        m2 *= f
-                    if scalar_field.mask.hexes[d1.x][d1.j]:
-                        destination.hexes[i+d1.x][j+d1.j] += m1
-                        destination.hexes[i][j] -= m1
-                    if scalar_field.mask.hexes[d2.x][d2.j]:
-                        destination.hexes[i+d2.x][j+d2.j] += m2
-                        destination.hexes[i][j] -= m2
+                    if Vex(i,j) in self.minima:
+                        delta = [0] * 6
+                        for n in range(6):
+                            if scalar_field.validHex(i+dirs[n].a, j+dirs[n].b):
+                                delta[n] = self.hexes[i+dirs[n].a][j+dirs[n].b].true_resolve(dirs[n]) * multiplier / 3
+                                if delta[n] < 0: delta[n] = 0
+                        sum = delta[0] + delta[1] + delta[2] + delta[3] + delta[4] + delta[5]
+                        controller = 1 if sum < scalar_field.hexes[i][j] else scalar_field.hexes[i][j] / sum
+                        for n in range(6):
+                            if delta[n] != 0:
+                                destination.hexes[i+dirs[n].a][j+dirs[n].b] += delta[n] * controller
+                                destination.hexes[i][j] -= delta[n] * controller
+                    else:
+                        resolution = self.hexes[i][j].resolve_closest_axes()
+                        d1 = dirs[resolution[0][0]]
+                        d2 = dirs[resolution[1][0]]
+                        m1 = resolution[0][1] * multiplier
+                        m2 = resolution[1][1] * multiplier
+                        if m1+m2>scalar_field.hexes[i][j]:
+                            f = scalar_field.hexes[i][j]/(m1+m2)
+                            m1 *= f
+                            m2 *= f
+                        if scalar_field.validHex(i+d1.a, j+d1.b):
+                            destination.hexes[i+d1.a][j+d1.b] += m1
+                            destination.hexes[i][j] -= m1
+                        if scalar_field.validHex(i+d2.a, j+d2.b):
+                            destination.hexes[i+d2.a][j+d2.b] += m2
+                            destination.hexes[i][j] -= m2
 
 
 class ScalarHexField:
 
-    def __init__(self, a, b, mask = None):
+    def __init__(self, a, b, mask = None, default_value = 0):
         self.a = a
         self.b = b
         self.hexes = [None]*a
         for i in range(a):
-            self.hexes[i] = [0]*b
+            self.hexes[i] = [default_value]*b
         if mask == None: self.mask = HexMask(a,b)
         else: self.mask = mask
 
@@ -221,32 +241,37 @@ class ScalarHexField:
     def __iadd__ (self, other):
         for i in range(self.a):
             for j in range(self.b):
-                if self.mask[i][j]:
+                if self.mask.hexes[i][j]:
                     self.hexes[i][j] += other.hexes[i][j]
+        return self
 
     def __isub__ (self, other):
         for i in range(self.a):
             for j in range(self.b):
-                if self.mask[i][j]:
+                if self.mask.hexes[i][j]:
                     self.hexes[i][j] -= other.hexes[i][j]
+        return self
 
     def __imul__ (self, factor):
         for i in range(self.a):
             for j in range(self.b):
-                if self.mask[i][j]:
+                if self.mask.hexes[i][j]:
                     self.hexes[i][j] *= factor
+        return self
                     
     def __itruediv__ (self, factor):
         for i in range(self.a):
             for j in range(self.b):
-                if self.mask[i][j]:
+                if self.mask.hexes[i][j]:
                     self.hexes[i][j] /= factor
+        return self
                     
     def __neg__ (self):
         for i in range(self.a):
             for j in range(self.b):
-                if self.mask[i][j]:
+                if self.mask.hexes[i][j]:
                     self.hexes[i][j] = -self.hexes[i][j]
+        return self
 
     def grad(self, destination = None):
         gradField = destination
@@ -256,12 +281,16 @@ class ScalarHexField:
             gradField.clear()
         for i in range(self.a):
             for j in range(self.b):
+                minimum = True
                 if self.mask.hexes[i][j]:
                     for d in range(6):
                         k = i + dirs[d].a
                         l = j + dirs[d].b
                         if self.validHex(k,l):
-                            gradField.hexes[i][j] += (self.hexes[k][l] - self.hexes[i][j]) * dirs[d]
+                            delta = self.hexes[k][l] - self.hexes[i][j]
+                            if delta > 0: minimum = False
+                            gradField.hexes[i][j] += delta * dirs[d]
+                if minimum: gradField.minima.append(Vex(i,j))
         return gradField
                     
     def clear(self):
@@ -269,7 +298,7 @@ class ScalarHexField:
             for j in range(self.b):
                 self.hexes[i][j] = 0
     
-    def clone(self, other):
+    def clone(self, other, multiplier = 1):
         for i in range(self.a):
             for j in range(self.b):
-                self.hexes[i][j] = other.hexes[i][j]
+                self.hexes[i][j] = other.hexes[i][j] * multiplier

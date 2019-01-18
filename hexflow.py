@@ -1,7 +1,14 @@
+# This is not meant to be a physically accurate simulation of flow.
+# (for one, there isn't any velocity here)
+# The dissolve_minima use is hacky but largely fixes the odd behavior
+# (which arises due to the inaccurate implementation).
+
 from typing import List
 import hexvex
 from hexvex import Vex, dirs
-from hexfield import *
+from scalarfield import *
+from vectorfield import *
+from fieldutils import *
 from graphics_backend import *
 
 import pygame
@@ -20,15 +27,9 @@ force = VectorHexField(grid_a, grid_b)
 pygame.init()
 clock = pygame.time.Clock()
 
-screen = pygame.display.set_mode((screen_width, screen_height))
-pygame.draw.rect(screen, (100, 100, 100), sidebar_rect)
-
 done = False
 paused = False
 
-show_forces = True
-show_potential = True
-show_density = True
 
 def recalculate():
     global potential, force
@@ -69,7 +70,7 @@ while not done:
             done = True
     if not paused:
         force.apply_to(density, density_buffer, 0.02)
-        density_buffer.dissolve_maxima(density, force, 1, 0.02)
+        density_buffer.dissolve_maxima(density, force, 1, 0.05)
         dynamic_potential = density
         recalculate()
     clock.tick(30)

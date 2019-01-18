@@ -5,15 +5,15 @@ import math
 screen_width = 1000
 screen_height = 700
 
-hex_radius = 30
+hex_radius = 7
 hex_height = 2 * hex_radius
 hex_width = 2 * hex_radius * hexvex.sin60
 cell_parameter = hex_width
 
 padding = 0.15
 
-grid_a = 10
-grid_b = 10
+grid_a = 40
+grid_b = 40
 half_hex = pygame.Vector2(hex_width / 2, hex_height / 2)
 half_tile = hexvex.Vex(0.5, 0.5)
 # The two are different! a hex (bounding box) is slightly larger than a tile,
@@ -26,6 +26,8 @@ grid_origin = game_rect.center - \
     hexvex.Vex(grid_a-1, grid_b-1).Vector2() / 2 * cell_parameter
 # Translated half a cell to the positive since hexagons are centred
 
+screen = pygame.display.set_mode((screen_width, screen_height))
+pygame.draw.rect(screen, (100, 100, 100), sidebar_rect)
 
 hexagon = pygame.Surface((hex_width, hex_height))
 hexagon.set_colorkey((0, 0, 0))

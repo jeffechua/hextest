@@ -179,39 +179,26 @@ class VectorHexField:
             for j in range(self.b):
                 self.hexes[i][j] = other.hexes[i][j] * multiplier
 
-    def apply_to(self, scalar_field, destination, multiplier):
+    def apply_to(self, scalar_field, destination, step):
         destination.clone(scalar_field)
         for i in range(self.a):
             for j in range(self.b):
                 if scalar_field.mask.hexes[i][j]:
-                    if Vex(i,j) in self.minima:
-                        delta = [0] * 6
-                        for n in range(6):
-                            if scalar_field.validHex(i+dirs[n].a, j+dirs[n].b):
-                                delta[n] = self.hexes[i+dirs[n].a][j+dirs[n].b].true_resolve(dirs[n]) * multiplier / 3
-                                if delta[n] < 0: delta[n] = 0
-                        sum = delta[0] + delta[1] + delta[2] + delta[3] + delta[4] + delta[5]
-                        controller = 1 if sum < scalar_field.hexes[i][j] else scalar_field.hexes[i][j] / sum
-                        for n in range(6):
-                            if delta[n] != 0:
-                                destination.hexes[i+dirs[n].a][j+dirs[n].b] += delta[n] * controller
-                                destination.hexes[i][j] -= delta[n] * controller
-                    else:
-                        resolution = self.hexes[i][j].resolve_closest_axes()
-                        d1 = dirs[resolution[0][0]]
-                        d2 = dirs[resolution[1][0]]
-                        m1 = resolution[0][1] * multiplier
-                        m2 = resolution[1][1] * multiplier
-                        if m1+m2>scalar_field.hexes[i][j]:
-                            f = scalar_field.hexes[i][j]/(m1+m2)
-                            m1 *= f
-                            m2 *= f
-                        if scalar_field.validHex(i+d1.a, j+d1.b):
-                            destination.hexes[i+d1.a][j+d1.b] += m1
-                            destination.hexes[i][j] -= m1
-                        if scalar_field.validHex(i+d2.a, j+d2.b):
-                            destination.hexes[i+d2.a][j+d2.b] += m2
-                            destination.hexes[i][j] -= m2
+                    resolution = self.hexes[i][j].resolve_closest_axes()
+                    d1 = dirs[resolution[0][0]]
+                    d2 = dirs[resolution[1][0]]
+                    m1 = resolution[0][1] * step
+                    m2 = resolution[1][1] * step
+                    if m1+m2>scalar_field.hexes[i][j]:
+                        f = scalar_field.hexes[i][j]/(m1+m2)
+                        m1 *= f
+                        m2 *= f
+                    if scalar_field.validHex(i+d1.a, j+d1.b):
+                        destination.hexes[i+d1.a][j+d1.b] += m1
+                        destination.hexes[i][j] -= m1
+                    if scalar_field.validHex(i+d2.a, j+d2.b):
+                        destination.hexes[i+d2.a][j+d2.b] += m2
+                        destination.hexes[i][j] -= m2
 
 
 class ScalarHexField:
@@ -292,6 +279,25 @@ class ScalarHexField:
                             gradField.hexes[i][j] += delta * dirs[d]
                 if minimum: gradField.minima.append(Vex(i,j))
         return gradField
+    
+    def dissolve_maxima(self, destination, vector_field, threshold, step):
+        destination.clone(self)
+        for i in range(self.a):
+            for j in range(self.b):
+                if vector_field.validHex(i,j) and abs(vector_field.hexes[i][j]) < threshold:
+                    delta = [0] * 6
+                    maximum = True
+                    for n in range(6):
+                        if self.validHex(i+dirs[n].a, j+dirs[n].b):
+                            delta[n] = self.hexes[i][j] - self.hexes[i+dirs[n].a][j+dirs[n].b]
+                            if delta[n] <= 0: maximum = False
+                    if not maximum: continue
+                    sum = delta[0] + delta[1] + delta[2] + delta[3] + delta[4] + delta[5]
+                    controller = 1 if sum < self.hexes[i][j] else self.hexes[i][j] / sum
+                    for n in range(6):
+                        if delta[n] > 0:
+                            destination.hexes[i+dirs[n].a][j+dirs[n].b] += delta[n] * controller * step
+                            destination.hexes[i][j] -= delta[n] * controller * step
                     
     def clear(self):
         for i in range(self.a):

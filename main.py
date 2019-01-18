@@ -8,7 +8,8 @@ import pygame
 from pygame import Vector2
 
 # The two densities buffer each other during force application
-density = (ScalarHexField(grid_a, grid_b, default_value = 5), ScalarHexField(grid_a, grid_b, default_value = 5))
+density = ScalarHexField(grid_a, grid_b, default_value = 5)
+density_buffer = ScalarHexField(grid_a, grid_b, default_value = 5)
 current = False
 monopoles = {}
 dynamic_potential = ScalarHexField(grid_a, grid_b)
@@ -23,20 +24,29 @@ screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.draw.rect(screen, (100, 100, 100), sidebar_rect)
 
 done = False
+paused = False
+
+show_forces = True
+show_potential = True
+show_density = True
 
 def recalculate():
     global potential, force
-    potential.clone(static_potential, multiplier = -1)
+    potential.clone(static_potential, multiplier=-1)
     potential += dynamic_potential
     potential.grad(force)
     force *= -1
     redraw()
 
+
 def redraw():
-    screen.fill((0,0,0), game_rect)
-    draw_scalar_field(screen, potential, -50, 50, pygame.Color(0,0,255), pygame.Color(255,0,0))
-    draw_scalar_field_circles(screen, density[current], 0, 50, hex_radius)
+    screen.fill((0, 0, 0), game_rect)
+    draw_scalar_field_back_hexes(screen, potential, -50, 50,
+                      pygame.Color(0, 0, 255), pygame.Color(255, 0, 0))
+    draw_scalar_field_hexes(screen, density, 0, 50,
+                      pygame.Color(10, 10, 10), pygame.Color(30, 100, 0))
     draw_vector_field(screen, force, 30)
+
 
 recalculate()
 
@@ -54,11 +64,13 @@ while not done:
                 else:
                     monopoles[tile] = Monopole(tile, -30, static_potential, recalculate)
         if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-            force.apply_to(density[current], density[not current], 0.02)
-            current = not current
-            dynamic_potential = density[current]
-            recalculate()
+            paused = not paused
         if event.type == pygame.QUIT:
             done = True
-
+    if not paused:
+        force.apply_to(density, density_buffer, 0.02)
+        density_buffer.dissolve_maxima(density, force, 1, 0.02)
+        dynamic_potential = density
+        recalculate()
+    clock.tick(30)
     pygame.display.flip()

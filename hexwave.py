@@ -42,7 +42,7 @@ while not done:
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
                 paused = not paused
-            if event.key == pygame.c:
+            if event.key == pygame.K_c:
                 displacement.clear()
                 velocity.clear()
             if event.key == pygame.K_r:

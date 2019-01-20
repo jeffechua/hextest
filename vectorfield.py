@@ -18,13 +18,13 @@ class VectorHexField:
     def getHex(self, vex):
         return self.hexes[vex.a][vex.b]
 
-    def validHexV(self, vex):
-        return self.validHex(vex.a, vex.b)
+    def valid_hex_v(self, vex, ignore_mask = False):
+        return self.valid_hex(vex.a, vex.b, ignore_mask)
 
-    def validHex(self, a, b):
+    def valid_hex(self, a, b, ignore_mask = False):
         if a < 0 or a >= self.a or b<0 or b >= self.b:
             return False
-        elif not self.mask.hexes[a][b]:
+        elif not self.mask.hexes[a][b] and not ignore_mask:
             return False
         return True
 

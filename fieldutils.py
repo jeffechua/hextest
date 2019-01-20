@@ -15,15 +15,20 @@ class HexMask:
             for j in range(self.b):
                 self.hexes[i][j] = self.hexes[i][j] and other.hexes[i][j]
 
-    def __ior__ (self, other):
+    def __ior__(self, other):
         for i in range(self.a):
             for j in range(self.b):
                 self.hexes[i][j] = self.hexes[i][j] or other.hexes[i][j]
 
-    def __neg__ (self):
+    def __neg__(self):
         for i in range(self.a):
             for j in range(self.b):
                 self.hexes[i][j] = not self.hexes[i][j]
+
+    def clear(self):
+        for i in range(self.a):
+            for j in range(self.b):
+                self.hexes[i][j] = True
 
 _mp_const = 3
 

@@ -12,18 +12,19 @@ class ScalarHexField:
         if mask == None: self.mask = fieldutils.HexMask(a,b)
         else: self.mask = mask
 
-    def getHex(self, vex):
+    def get_hex(self, vex):
         return self.hexes[vex.a][vex.b]
 
-    def validHexV(self, vex):
-        return self.validHex(vex.a, vex.b)
+    def valid_hex_v(self, vex, ignore_mask = False):
+        return self.valid_hex(vex.a, vex.b, ignore_mask)
 
-    def validHex(self, a, b):
+    def valid_hex(self, a, b, ignore_mask = False):
         if a < 0 or a >= self.a or b<0 or b >= self.b:
             return False
-        elif not self.mask.hexes[a][b]:
+        elif not self.mask.hexes[a][b] and not ignore_mask:
             return False
         return True
+
 
     def __iadd__ (self, other):
         for i in range(self.a):
@@ -79,7 +80,7 @@ class ScalarHexField:
                     for d in range(6):
                         k = i + dirs[d].a
                         l = j + dirs[d].b
-                        if self.validHex(k,l):
+                        if self.valid_hex(k,l):
                             delta = self.hexes[k][l] - self.hexes[i][j]
                             if delta > 0: maximum = False
                             gradField.hexes[i][j] += delta * dirs[d]
@@ -93,11 +94,11 @@ class ScalarHexField:
             if vector_field.validHexV(maximum) and abs(vector_field.getHex(maximum)) < threshold:
                 delta = [0] * 6
                 for n in range(6):
-                    if self.validHexV(maximum + dirs[n]):
-                        delta[n] = self.getHex(maximum) - self.getHex(maximum + dirs[n])
+                    if self.valid_hex_v(maximum + dirs[n]):
+                        delta[n] = self.get_hex(maximum) - self.get_hex(maximum + dirs[n])
                 sum = delta[0] + delta[1] + delta[2] + delta[3] + delta[4] + delta[5]
                 if sum == 0: continue
-                controller = 1 if sum < self.getHex(maximum) else self.getHex(maximum) / sum
+                controller = 1 if sum < self.get_hex(maximum) else self.get_hex(maximum) / sum
                 for n in range(6):
                     if delta[n] > 0:
                         destination.hexes[maximum.a+dirs[n].a][maximum.b+dirs[n].b] += delta[n] * controller * step
@@ -108,7 +109,7 @@ class ScalarHexField:
         magic_number = 1 + 2 / math.sqrt(3)
         for i in range(self.a):
             for j in range(self.b):
-                if self.validHex(i,j):
+                if self.valid_hex(i,j):
                     # here we geometrically approximate d2u/dx2 as (d2u/da2 + d2u/db2)/sqrt(3)
                     # we can also change the x and y axes and blend b and c, or c and a,
                     # and if we average the (d2u/dx2 + d2u/dy2) obtained from all three axes picks we get
@@ -122,7 +123,7 @@ class ScalarHexField:
                     #                        - 6 u(p)) * (1 + 2/(sqrt(3))
                     sum = -6 * self.hexes[i][j]
                     for n in range(6):
-                        if self.validHex(i + dirs[n].a, j + dirs[n].b):
+                        if self.valid_hex(i + dirs[n].a, j + dirs[n].b):
                             sum += self.hexes[i + dirs[n].a][j + dirs[n].b]
                     sum *= magic_number
                     destination.hexes[i][j] = sum * csquared

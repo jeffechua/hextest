@@ -1,6 +1,7 @@
 import hexvex
 import pygame
 import math
+from wavedata import grid_a, grid_b
 
 screen_width = 1000
 screen_height = 700
@@ -12,8 +13,6 @@ cell_parameter = hex_width
 
 padding = 0.15
 
-grid_a = 40
-grid_b = 40
 half_hex = pygame.Vector2(hex_width / 2, hex_height / 2)
 half_tile = hexvex.Vex(0.5, 0.5)
 # The two are different! a hex (bounding box) is slightly larger than a tile,
@@ -27,7 +26,7 @@ grid_origin = game_rect.center - \
 # Translated half a cell to the positive since hexagons are centred
 
 screen = pygame.display.set_mode((screen_width, screen_height))
-pygame.draw.rect(screen, (100, 100, 100), sidebar_rect)
+pygame.draw.rect(screen, (50, 50, 50), sidebar_rect)
 
 hexagon = pygame.Surface((hex_width, hex_height))
 hexagon.set_colorkey((0, 0, 0))
@@ -96,41 +95,43 @@ def lerp_color(color1, color2, const):
 def draw_scalar_field_hexes(screen, field, scale_start, scale_end, color_start, color_end):
     for i in range(grid_a):
         for j in range(grid_b):
-            frac = (field.hexes[i][j]-scale_start) / (scale_end-scale_start)
-            frac = clamp(frac, 0,1)
-            color = lerp_color(color_end, color_start, frac)
-            screen.blit(get_hexagon(color), hex_to_screen_space(
-                hexvex.Vex(i, j)) - half_hex)
-            # Translated half a cell to the negative so the hexagons are centred
+            if field.valid_hex(i,j):
+                frac = (field.hexes[i][j]-scale_start) / (scale_end-scale_start)
+                frac = clamp(frac, 0,1)
+                color = lerp_color(color_end, color_start, frac)
+                screen.blit(get_hexagon(color), hex_to_screen_space(
+                    hexvex.Vex(i, j)) - half_hex)
+                # Translated half a cell to the negative so the hexagons are centred
 
 def draw_scalar_field_back_hexes(screen, field, scale_start, scale_end, color_start, color_end):
     for i in range(grid_a):
         for j in range(grid_b):
-            frac = (field.hexes[i][j]-scale_start) / (scale_end-scale_start)
-            frac = clamp(frac, 0,1)
-            color = lerp_color(color_end, color_start, frac)
-            screen.blit(get_back_hexagon(color), hex_to_screen_space(
-                hexvex.Vex(i, j)) - half_hex)
-            # Translated half a cell to the negative so the hexagons are centred
+            if field.valid_hex(i,j):
+                frac = (field.hexes[i][j]-scale_start) / (scale_end-scale_start)
+                frac = clamp(frac, 0,1)
+                color = lerp_color(color_end, color_start, frac)
+                screen.blit(get_back_hexagon(color), hex_to_screen_space(
+                    hexvex.Vex(i, j)) - half_hex)
+                # Translated half a cell to the negative so the hexagons are centred
 
 
 def draw_scalar_field_circles(screen, field, scale_start, scale_end, max_radius, color=(0, 0, 0)):
     for i in range(grid_a):
         for j in range(grid_b):
-            radius = max_radius * \
-                (field.hexes[i][j]-scale_start) / (scale_end-scale_start)
-            radius = clamp(radius, 0, max_radius)
-            pos = hex_to_screen_space(hexvex.Vex(i, j))
-            pygame.draw.circle(
-                screen, color, (int(pos.x), int(pos.y)), int(radius))
+            if field.valid_hex(i,j):
+                radius = max_radius * \
+                    (field.hexes[i][j]-scale_start) / (scale_end-scale_start)
+                radius = clamp(radius, 0, max_radius)
+                pos = hex_to_screen_space(hexvex.Vex(i, j))
+                pygame.draw.circle(screen, color, (int(pos.x), int(pos.y)), int(radius))
 
 
 def draw_vector_field(screen, field, max_size_magnitude):
     for i in range(grid_a):
         for j in range(grid_b):
-            # (magnitude, argument)
-            polar = field.hexes[i][j].Vector2().as_polar()
-            arrow = get_arrow(
-                (255, 255, 255), polar[1], polar[0] / max_size_magnitude)
-            screen.blit(arrow, hex_to_screen_space(hexvex.Vex(
-                i, j)) - (arrow.get_width()/2, arrow.get_height()/2))
+            if field.valid_hex(i,j):
+                # (magnitude, argument)
+                polar = field.hexes[i][j].Vector2().as_polar()
+                arrow = get_arrow(
+                    (255, 255, 255), polar[1], polar[0] / max_size_magnitude)
+                screen.blit(arrow, hex_to_screen_space(hexvex.Vex(i, j)) - (arrow.get_width()/2, arrow.get_height()/2))

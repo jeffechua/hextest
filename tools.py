@@ -1,6 +1,8 @@
 from graphics_backend import *
 import pygame
 import math
+from hexvex import dirs
+from pygame import key
 
 def none(tile): pass #empty function for if we don't want to define it
 
@@ -35,16 +37,33 @@ class FreeDrawTool(ToolBase):
         self.drawing = 0
 
     def behave(self, tile):
-        if self.drawing != 0:
-            function = self.left_draw if self.drawing == -1 else self.right_draw
-            dist = abs(tile - self.old_position)
-            if dist > 0:
-                dir = (tile - self.old_position)/dist / 2 # moving in unit length steps leaves holes. half-lengths is overkill,
-                steps = math.floor(dist) * 2              # but then again this is far from being the performance bottleneck.
-                for n in range(steps):
-                    function((self.old_position + dir * n).round())
-            function(tile)
-            self.old_position = tile
+
+        if pygame.key.get_pressed()[pygame.K_LCTRL] or pygame.key.get_pressed()[pygame.K_RCTRL]:
+            return
+
+        button = ""
+        if pygame.mouse.get_pressed()[0]:
+            button = -1
+        elif pygame.mouse.get_pressed()[2]:
+            button = 1
+        else:
+            return
+        
+        function = self.left_draw if button == -1 else self.right_draw
+        dist = abs(tile - self.old_position)
+        if dist > 0:
+            dir = (tile - self.old_position)/dist / 3 # moving in unit length steps leaves holes. third-lengths is overkill,
+            steps = math.floor(dist) * 3              # but then again this is far from being the performance bottleneck.
+            for n in range(steps):
+                function((self.old_position + dir * n).round())
+                if key.get_pressed()[pygame.K_LSHIFT] or key.get_pressed()[pygame.K_LSHIFT]:
+                    for k in range(6):
+                        function((self.old_position + dir * n).round() + dirs[k])
+        function(tile)
+        if key.get_pressed()[pygame.K_LSHIFT] or key.get_pressed()[pygame.K_LSHIFT]:
+            for n in range(6):
+                function(tile+dirs[n])
+        self.old_position = tile
             
 
     

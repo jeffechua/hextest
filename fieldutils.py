@@ -3,12 +3,20 @@ import math
 
 class HexMask:
 
-    def __init__(self, a, b):
+    #ONLY flag hexagonal if a = b
+    def __init__(self, a, b, hexagonal = False):
         self.a = a
         self.b = b
+        self.hexagonal = hexagonal
         self.hexes = [None]*a
         for i in range(a):
             self.hexes[i] = [True]*b
+        if hexagonal:
+            halfway = round(a/2)
+            for i in range(halfway, a):
+                for j in range(0, i-halfway):
+                    self.hexes[i][j] = False
+                    self.hexes[j][i] = False
 
     def __iand__(self, other):
         for i in range(self.a):
@@ -29,6 +37,12 @@ class HexMask:
         for i in range(self.a):
             for j in range(self.b):
                 self.hexes[i][j] = True
+        if self.hexagonal:
+            halfway = round(self.a/2)
+            for i in range(halfway, self.a):
+                for j in range(0, i-halfway):
+                    self.hexes[i][j] = False
+                    self.hexes[j][i] = False
 
 _mp_const = 3
 

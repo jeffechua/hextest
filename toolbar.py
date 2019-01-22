@@ -22,6 +22,7 @@ class Toolbar:
         elif self.current < 0:       self.current = self.len - 1
         pygame.draw.rect(screen, (255,255,255), pygame.Rect(10,10 + 80 * self.current,60,60))
         screen.blit(self.icons[self.current], (15, 80 * self.current + 15))
+        self.tools[self.current].select()
 
     def increment_selection(self):
         self.select(self.current+1)

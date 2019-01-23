@@ -79,7 +79,7 @@ class FreeDrawTool(ToolBase):
     
 
     def overlay_tile(self, tile):
-        screen.blit(get_hexagon((50,50,50)), hex_to_screen_space(tile) - half_hex, special_flags = pygame.BLEND_RGB_ADD)
+        draw_combine_back_hexagon(hex_to_screen_space(tile) - half_hex, (50,50,50), pygame.BLEND_RGB_ADD)
 
 
     def get_all_traversed(self, tile):
@@ -90,9 +90,9 @@ class FreeDrawTool(ToolBase):
                 traversed.add(tile+dirs[n])
         
         dist = abs(tile - self.old_position)
-        if dist > 0:
+        if dist > 0.0:
             dir = (tile - self.old_position)/dist / 3
-            steps = math.floor(dist) * 3
+            steps = round(dist) * 3
             for n in range(steps):
                 traversed.add((self.old_position + dir * n).round())
                 if key.get_pressed()[pygame.K_LSHIFT] or key.get_pressed()[pygame.K_LSHIFT]:

@@ -12,7 +12,7 @@ class HexMask:
         for i in range(a):
             self.hexes[i] = [True]*b
         if hexagonal:
-            halfway = round(a/2)
+            halfway = math.floor(a/2)
             for i in range(halfway, a):
                 for j in range(0, i-halfway):
                     self.hexes[i][j] = False
@@ -38,7 +38,7 @@ class HexMask:
             for j in range(self.b):
                 self.hexes[i][j] = True
         if self.hexagonal:
-            halfway = round(self.a/2)
+            halfway = math.floor(self.a/2)
             for i in range(halfway, self.a):
                 for j in range(0, i-halfway):
                     self.hexes[i][j] = False

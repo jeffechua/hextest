@@ -100,3 +100,4 @@ class FreeDrawTool(ToolBase):
                         traversed.add((self.old_position + dir * n).round() + dirs[k])
 
         return traversed
+

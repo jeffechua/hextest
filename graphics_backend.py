@@ -1,6 +1,7 @@
 import hexvex
 import pygame
 import math
+from pygame import freetype
 from wavedata import grid_a, grid_b
 
 screen_width = 1000
@@ -28,6 +29,9 @@ grid_origin = game_rect.center - \
 
 screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.draw.rect(screen, (50, 50, 50), sidebar_rect)
+
+freetype.init()
+font = freetype.SysFont("Arial", 15)
 
 center = pygame.Vector2(hex_width / 2, hex_height / 2)
 p = [None]*6
@@ -59,6 +63,22 @@ class Spectrum:
     
     def retrieve(self, index):
         return self.colors[round(clamp(index, self.scale_start, self.scale_end)) - self.scale_start]
+
+def print_topleft(text, x_offset, y_offset):
+    font.render_to(screen, (game_rect.topleft[0]+x_offset, game_rect.topleft[1]+y_offset), text, (255,255,255))
+    
+def print_bottomleft(text, x_offset, y_offset):
+    font.render_to(screen, (game_rect.bottomleft[0]+x_offset, game_rect.bottomleft[1]+y_offset-15), text, (255,255,255))
+
+def print_bottomright(text, x_offset, y_offset):
+    surf = font.render(text, (255,255,255))[0]
+    screen.blit(surf, (game_rect.bottomright[0] - surf.get_width() + x_offset,
+                      game_rect.bottomright[1] - 15 + y_offset))
+
+def print_topright(text, x_offset, y_offset):
+    surf = font.render(text, (255,255,255))[0]
+    screen.blit(surf, (game_rect.topright[0] - surf.get_width() + x_offset,
+                      game_rect.topright[1] + y_offset))
 
 def draw_combine_back_hexagon(pos, color, flags):
     temp_surf = pygame.Surface((int(hex_width), int(hex_height)))

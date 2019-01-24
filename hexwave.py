@@ -1,6 +1,8 @@
+import pyximport
+pyximport.install()
+
 from hexvex import Vex, dirs
 from scalarfield import *
-from vectorfield import *
 from graphics_backend import *
 from wavedata import *
 from wavetools import toolbar

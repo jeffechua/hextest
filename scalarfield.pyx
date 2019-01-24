@@ -1,14 +1,18 @@
 from hexvex import Vex, dirs
 import math, fieldutils
+from vectorfield import *
 
 class ScalarHexField:
 
     def __init__(self, a, b, mask = None, default_value = 0):
-        self.a = a
-        self.b = b
         self.hexes = [None]*a
+        cdef int int_a = a 
+        cdef int int_b = b #converting to cdef int gives ~5% performance improvement
+        self.a = int_a
+        self.b = int_b
+        cdef float float_default = default_value #gives a small 5-10% performance improvement
         for i in range(a):
-            self.hexes[i] = [default_value]*b
+            self.hexes[i] = [float_default]*b
         if mask == None: self.mask = fieldutils.HexMask(a,b)
         else: self.mask = mask
 
@@ -70,7 +74,7 @@ class ScalarHexField:
     def grad(self, destination = None):
         gradField = destination
         if gradField == None:
-            VectorHexField(self.a, self.b, self.mask)
+            gradfield = VectorHexField(self.a, self.b, self.mask)
         else:
             gradField.clear()
         for i in range(self.a):
@@ -107,26 +111,37 @@ class ScalarHexField:
     #numerically evaluates the wave equation for d2u/dt2, which is written to [destination]
     def evaluate_wave_equation(self, destination, csquared):
         magic_number = 1 + 2 / math.sqrt(3)
-        for i in range(self.a):
-            for j in range(self.b):
-                if self.valid_hex(i,j):
-                    # here we geometrically approximate d2u/dx2 as (d2u/da2 + d2u/db2)/sqrt(3)
-                    # we can also change the x and y axes and blend b and c, or c and a,
-                    # and if we average the (d2u/dx2 + d2u/dy2) obtained from all three axes picks we get
-                    #   (d2u/da2 + d2u/db2 + d3u/db2)*(1 + 2/(sqrt(3))
-                    # then we approximate d2u/da2 at p as:
-                    #   d2u/da2 = (u(p+a) - u(p)) - (u(p) - u(p-a)) = u(p+a) + u(p-a) - 2 u(p)
-                    # so we get
-                    #   (d2u/dx2 + d2u/dy2) = (u(p+a) + u(p-a) +
-                    #                          u(p+b) - u(p-b) +
-                    #                          u(p+c) - u(p-c) 
-                    #                        - 6 u(p)) * (1 + 2/(sqrt(3))
-                    sum = -6 * self.hexes[i][j]
-                    for n in range(6):
-                        if self.valid_hex(i + dirs[n].a, j + dirs[n].b):
-                            sum += self.hexes[i + dirs[n].a][j + dirs[n].b]
-                    sum *= magic_number
-                    destination.hexes[i][j] = sum * csquared
+        # here we geometrically approximate d2u/dx2 as (d2u/da2 + d2u/db2)/sqrt(3)
+        # we can also change the x and y axes and blend b and c, or c and a,
+        # and if we average the (d2u/dx2 + d2u/dy2) obtained from all three axes picks we get
+        #   (d2u/da2 + d2u/db2 + d3u/db2)*(1 + 2/(sqrt(3))
+        # then we approximate d2u/da2 at p as:
+        #   d2u/da2 = (u(p+a) - u(p)) - (u(p) - u(p-a)) = u(p+a) + u(p-a) - 2 u(p)
+        # so we get
+        #   (d2u/dx2 + d2u/dy2) = (u(p+a) + u(p-a) +
+        #                          u(p+b) - u(p-b) +
+        #                          u(p+c) - u(p-c) 
+        #                        - 6 u(p)) * (1 + 2/(sqrt(3))
+        destination.clone(self, -6)
+        # Take care of most of the area
+        for i in range(self.a-1):
+            for j in range(self.b-1):
+                if self.mask.hexes[i][j]: #We know we're not out of bounds so only checking the mask is faster
+                    for n in range(3):
+                        i2 = i + dirs[n].a
+                        j2 = j + dirs[n].b
+                        if self.mask.hexes[i2][j2]:
+                            destination.hexes[i][j] += self.hexes[i2][j2]
+                            destination.hexes[i2][j2] += self.hexes[i][j]
+        for i in range(self.a-1): #inteconnections between tiles on right edge
+            if self.mask.hexes[i][self.b-1] and self.mask.hexes[i+1][self.b-1]:
+                destination.hexes[i][self.b-1] += self.hexes[i+1][self.b-1]
+                destination.hexes[i+1][self.b-1] += self.hexes[i][self.b-1]
+        for j in range(self.b-1): #interconnections between tiles on left edge
+            if self.mask.hexes[self.a-1][j] and self.mask.hexes[self.a-1][j+1]:
+                destination.hexes[self.a-1][j] += self.hexes[self.a-1][j+1]
+                destination.hexes[self.a-1][j+1] += self.hexes[self.a-1][j]
+        destination *= magic_number * csquared
 
 
 

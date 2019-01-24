@@ -1,5 +1,6 @@
 from scalarfield import *
 from fieldutils import HexMask
+import pygame
 
 grid_a = 61
 grid_b = 61
@@ -15,6 +16,6 @@ velocity = ScalarHexField(grid_a, grid_b, mask = displacement.mask)
 acceleration = ScalarHexField(grid_a, grid_b, mask = displacement.mask)
 
 def simulate_step():
-    displacement.evaluate_wave_equation(acceleration, csquared)
+    displacement.evaluate_wave_equation(acceleration, csquared) #This is where most time is spent
     acceleration.add_fraction_to(velocity, timestep)
     velocity.add_fraction_to(displacement, timestep)

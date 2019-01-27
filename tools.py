@@ -4,14 +4,15 @@ import math
 from hexvex import Vex, dirs
 from pygame import key
 
-def none(tile): pass #empty function for if we don't want to define it
+def none(arg): pass #empty function for if we don't want to define it
 
 class ToolBase:
 
     # each function takes a Vex as an argument
-    def __init__(self, mouse_down = none, mouse_up = none, before_math = none, after_math = none, after_draw = none):
+    def __init__(self, mouse_down = none, mouse_up = none, mouse_scroll = none, before_math = none, after_math = none, after_draw = none):
         self.mouse_down = mouse_down
         self.mouse_up = mouse_up
+        self.mouse_scroll = mouse_scroll
         self.before_math = before_math
         self.after_math = after_math
         self.after_draw = after_draw
@@ -26,9 +27,11 @@ class FreeDrawTool(ToolBase):
         self.left_draw = left_draw
         self.right_draw = right_draw
         self.current_button = 0
+        self.brush_radius = 1
         self.controlled_drag = False
         self.old_position = Vex(0,0) # -1 = left mouse, 0 = not drawing, 1 = right mouse
-        ToolBase.__init__(self, mouse_down = self.begin_draw, mouse_up = self.end_draw, after_math = self.behave, after_draw = self.overlay_all)
+        ToolBase.__init__(self, mouse_down = self.begin_draw, mouse_up = self.end_draw,
+                          mouse_scroll = self.change_brush_size, after_math = self.behave, after_draw = self.overlay_selected)
 
 
     def select(self):
@@ -47,6 +50,10 @@ class FreeDrawTool(ToolBase):
                 func(pos)
         self.old_position = tile
         self.controlled_drag = False
+
+    
+    def change_brush_size(self, delta):
+        self.brush_radius = clamp(self.brush_radius + delta, 0, 10)
 
 
     def behave(self, tile):
@@ -72,10 +79,15 @@ class FreeDrawTool(ToolBase):
         self.old_position = tile
 
 
-    def overlay_all(self, tile):
+    def overlay_selected(self, tile):
         if self.controlled_drag and (pygame.key.get_pressed()[pygame.K_LCTRL] or pygame.key.get_pressed()[pygame.K_RCTRL]):
             for pos in self.get_all_traversed(tile):
                 self.overlay_tile(pos)
+        else:
+            r = self.brush_radius
+            for i in range(-r, r+1):                       # This makes sense if you
+                for j in range(clamp(i-r, -r, 0), clamp(i+r, 0, r)+1): # draw it out
+                    self.overlay_tile(tile + Vex(i, j))
     
 
     def overlay_tile(self, tile):
@@ -84,20 +96,20 @@ class FreeDrawTool(ToolBase):
 
     def get_all_traversed(self, tile):
         
-        traversed = {tile}
-        if key.get_pressed()[pygame.K_LSHIFT] or key.get_pressed()[pygame.K_LSHIFT]:
-            for n in range(6):
-                traversed.add(tile+dirs[n])
-        
+        axis = {tile}
         dist = abs(tile - self.old_position)
         if dist > 0.0:
             dir = (tile - self.old_position)/dist / 3
             steps = round(dist) * 3
             for n in range(steps):
-                traversed.add((self.old_position + dir * n).round())
-                if key.get_pressed()[pygame.K_LSHIFT] or key.get_pressed()[pygame.K_LSHIFT]:
-                    for k in range(6):
-                        traversed.add((self.old_position + dir * n).round() + dirs[k])
+                axis.add((self.old_position + dir * n).round())
+
+        traversed = set()
+        r = self.brush_radius
+        for point in axis:
+            for i in range(-r, r+1):                       # This makes sense if you
+                for j in range(clamp(i-r, -r, 0), clamp(i+r, 0, r)+1): # draw it out
+                    traversed.add(point + Vex(i, j))
 
         return traversed
 

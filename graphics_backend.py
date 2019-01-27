@@ -64,6 +64,12 @@ class Spectrum:
     def retrieve(self, index):
         return self.colors[round(clamp(index, self.scale_start, self.scale_end)) - self.scale_start]
 
+def restrict_drawing():
+    screen.set_clip(game_rect)
+
+def free_drawing():
+    screen.set_clip(None)
+
 def print_topleft(text, x_offset, y_offset):
     font.render_to(screen, (game_rect.topleft[0]+x_offset, game_rect.topleft[1]+y_offset), text, (255,255,255))
     

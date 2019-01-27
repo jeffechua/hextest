@@ -51,11 +51,19 @@ while not done:
 
     for event in pygame.event.get():
         if event.type == pygame.MOUSEBUTTONDOWN:
-            toolbar.tools[toolbar.current].mouse_down(tile)
+            controlled = pygame.key.get_pressed()[pygame.K_LCTRL] or pygame.key.get_pressed()[pygame.K_RCTRL]
             if event.button == 4:
-                toolbar.increment_selection()
+                if controlled:
+                    toolbar.tools[toolbar.current].mouse_scroll(+1)
+                else:
+                    toolbar.increment_selection()
             elif event.button == 5:
-                toolbar.decrement_selection()
+                if controlled:
+                    toolbar.tools[toolbar.current].mouse_scroll(-1)
+                else:
+                    toolbar.decrement_selection()
+            else:
+                toolbar.tools[toolbar.current].mouse_down(tile)
         if event.type == pygame.MOUSEBUTTONUP:
             toolbar.tools[toolbar.current].mouse_up(tile)
         if event.type == pygame.KEYDOWN:

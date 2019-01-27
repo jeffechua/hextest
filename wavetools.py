@@ -4,17 +4,17 @@ from pygame import key
 from tools import FreeDrawTool
 from toolbar import Toolbar
 
-def set_velocity(tile, value):
-    if velocity.valid_hex_v(tile): velocity.hexes[tile.a][tile.b] = value
-def kick_positive(tile): set_velocity(tile, 500)
-def kick_negative(tile): set_velocity(tile, -500)
+def set_displacement(tile, value):
+    if displacement.valid_hex_v(tile): displacement.hexes[tile.a][tile.b] = value
+def set_positive(tile): set_displacement(tile, 30)
+def set_negative(tile): set_displacement(tile, -30)
 
 def mask(tile):
     if displacement.valid_hex_v(tile): displacement.mask.hexes[tile.a][tile.b] = False
 def unmask(tile):
     if displacement.valid_hex_v(tile, True): displacement.mask.hexes[tile.a][tile.b] = True
 
-draw_velocity_tool = FreeDrawTool(kick_positive, kick_negative)
+draw_velocity_tool = FreeDrawTool(set_positive, set_negative)
 draw_velocity_icon = pygame.Surface((50,50))
 draw_velocity_icon.fill((0,0,255))
 pygame.draw.polygon(draw_velocity_icon, (255,0,0), [(0,0),(30,0),(20,50),(0,50)])

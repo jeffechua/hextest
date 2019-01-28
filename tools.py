@@ -80,22 +80,31 @@ class FreeDrawTool(ToolBase):
 
 
     def overlay_selected(self, tile):
+        r = self.brush_radius
+        w = hex_width*(2*r+1)
+        h = hex_height*(2*r+1)
+        brush = pygame.Surface((w, h))
+        brush.set_colorkey((0,0,0))
+        for i in range(-r, r+1):                       # This makes sense if you
+            for j in range(clamp(i-r, -r, 0), clamp(i+r, 0, r)+1): # draw it out
+                points = p2.copy()
+                for k in range(6):
+                    points[k] = points[k] + Vex(i,j).Vector2() * cell_parameter + (w/2, h/2) - half_hex
+                pygame.draw.polygon(brush, (50,50,50), points)
         if self.controlled_drag and (pygame.key.get_pressed()[pygame.K_LCTRL] or pygame.key.get_pressed()[pygame.K_RCTRL]):
-            for pos in self.get_all_traversed(tile):
-                self.overlay_tile(pos)
+            axis = self.get_traversal_axis(tile)
+            overlay = pygame.Surface(screen.get_size())
+            for pos in axis:
+                overlay.blit(brush, hex_to_screen_space(pos)-pygame.Vector2(w/2, h/2))
+            screen.blit(overlay, (0,0), special_flags = pygame.BLEND_RGB_ADD)
         else:
-            r = self.brush_radius
-            for i in range(-r, r+1):                       # This makes sense if you
-                for j in range(clamp(i-r, -r, 0), clamp(i+r, 0, r)+1): # draw it out
-                    self.overlay_tile(tile + Vex(i, j))
+            screen.blit(brush, hex_to_screen_space(tile) - (w/2, h/2) - half_hex, special_flags = pygame.BLEND_RGB_ADD)
     
 
     def overlay_tile(self, tile):
         draw_combine_back_hexagon(hex_to_screen_space(tile) - half_hex, (50,50,50), pygame.BLEND_RGB_ADD)
 
-
-    def get_all_traversed(self, tile):
-        
+    def get_traversal_axis(self, tile):
         axis = {tile}
         dist = abs(tile - self.old_position)
         if dist > 0.0:
@@ -103,7 +112,10 @@ class FreeDrawTool(ToolBase):
             steps = round(dist) * 3
             for n in range(steps):
                 axis.add((self.old_position + dir * n).round())
+        return axis
 
+    def get_all_traversed(self, tile):
+        axis = self.get_traversal_axis(tile)
         traversed = set()
         r = self.brush_radius
         for point in axis:

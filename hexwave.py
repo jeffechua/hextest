@@ -36,10 +36,13 @@ stutter_counter = 0
 stutter_frequency = 0
 
 spectrum = Spectrum(-50, 50, pygame.Color(0, 0, 255), pygame.Color(255, 0, 0))
+blur = False
 
 def redraw():
     screen.fill((0, 0, 0), game_rect)
     draw_scalar_field_back_hexes(screen, displacement, spectrum)
+    if blur:
+        screen.blit(pygame.transform.smoothscale(pygame.transform.smoothscale(screen, (int(screen_width/10),int(screen_height/10))), (int(screen_width), int(screen_height))), (0,0))
 
 while not done:
 
@@ -76,6 +79,8 @@ while not done:
                 displacement.clear()
                 velocity.clear()
                 displacement.mask.clear()
+            if event.key == pygame.K_b:
+                blur = not blur
         if event.type == pygame.QUIT:
             done = True
 

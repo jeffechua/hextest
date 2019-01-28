@@ -82,7 +82,7 @@ class FreeDrawTool(ToolBase):
     def overlay_selected(self, tile):
         r = self.brush_radius
         w = hex_width*(2*r+1)
-        h = hex_height*(2*r+1)
+        h = hex_height*(2*r+1) #Todo: fix; this is more than necessary
         brush = pygame.Surface((w, h))
         brush.set_colorkey((0,0,0))
         for i in range(-r, r+1):                       # This makes sense if you
@@ -95,10 +95,10 @@ class FreeDrawTool(ToolBase):
             axis = self.get_traversal_axis(tile)
             overlay = pygame.Surface(screen.get_size())
             for pos in axis:
-                overlay.blit(brush, hex_to_screen_space(pos)-pygame.Vector2(w/2, h/2))
+                overlay.blit(brush, hex_to_screen_space(pos) - (w/2, h/2))
             screen.blit(overlay, (0,0), special_flags = pygame.BLEND_RGB_ADD)
         else:
-            screen.blit(brush, hex_to_screen_space(tile) - (w/2, h/2) - half_hex, special_flags = pygame.BLEND_RGB_ADD)
+            screen.blit(brush, hex_to_screen_space(tile) - (w/2, h/2), special_flags = pygame.BLEND_RGB_ADD)
     
 
     def overlay_tile(self, tile):

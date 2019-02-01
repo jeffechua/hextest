@@ -35,14 +35,14 @@ font = freetype.SysFont("Arial", 15)
 
 center = pygame.Vector2(hex_width / 2, hex_height / 2)
 p = [None]*6
-p[0] = pygame.Vector2(0, (hex_height - hex_radius) / 2)
-p[1] = pygame.Vector2(0, (hex_height + hex_radius) / 2)
-p[2] = pygame.Vector2(hex_width/2, hex_height)
-p[3] = pygame.Vector2(hex_width, (hex_height+hex_radius)/2)
-p[4] = pygame.Vector2(hex_width, (hex_height-hex_radius)/2)
-p[5] = pygame.Vector2(hex_width/2, 0)
+p[0] = pygame.Vector2(-hex_width/2, - hex_radius/2)
+p[1] = pygame.Vector2(-hex_width/2, hex_radius/2)
+p[2] = pygame.Vector2(0, hex_height/2)
+p[3] = pygame.Vector2(hex_width/2, hex_radius/2)
+p[4] = pygame.Vector2(hex_width/2, -hex_radius/2)
+p[5] = pygame.Vector2(0, -hex_height/2)
 p2 = p.copy()
-for i in range(len(p)): p[i] = p[i] + (center - p[i])*(padding)
+for i in range(len(p)): p[i] = p[i] * (1 - padding)
 
 
 full_arrow = pygame.image.load("arrow.png")
@@ -86,11 +86,14 @@ def print_topright(text, x_offset, y_offset):
     screen.blit(surf, (game_rect.topright[0] - surf.get_width() + x_offset,
                       game_rect.topright[1] + y_offset))
 
+temp_surf = pygame.Surface((int(hex_width), int(hex_height)))
+temp_surf.set_colorkey((0,0,0))
+offset_p2 = list()
+for i in range(6): offset_p2.append(p2[i] + half_hex)
 def draw_combine_back_hexagon(pos, color, flags):
-    temp_surf = pygame.Surface((int(hex_width), int(hex_height)))
-    temp_surf.set_colorkey((0,0,0))
-    pygame.draw.polygon(temp_surf, color, p2)
-    screen.blit(temp_surf, pos, special_flags = flags)
+    temp_surf.fill((0,0,0))
+    pygame.draw.polygon(temp_surf, color, offset_p2)
+    screen.blit(temp_surf, pos-half_hex, special_flags = flags)
 
 def draw_hexagon(pos, color):
     new_points = p.copy()
@@ -132,14 +135,14 @@ def draw_scalar_field_hexes(screen, field, spectrum):
     for i in range(grid_a):
         for j in range(grid_b):
             if field.valid_hex(i,j):
-                draw_hexagon(hex_to_screen_space(hexvex.Vex(i, j)) - half_hex, spectrum.retrieve(field.hexes[i][j]))
+                draw_hexagon(hex_to_screen_space(hexvex.Vex(i, j)), spectrum.retrieve(field.hexes[i][j]))
                 # Translated half a cell to the negative so the hexagons are centred
 
 def draw_scalar_field_back_hexes(screen, field, spectrum):
     for i in range(grid_a):
         for j in range(grid_b):
             if field.valid_hex(i,j):
-                draw_back_hexagon(hex_to_screen_space(hexvex.Vex(i, j)) - half_hex, spectrum.retrieve(field.hexes[i][j]))
+                draw_back_hexagon(hex_to_screen_space(hexvex.Vex(i, j)), spectrum.retrieve(field.hexes[i][j]))
                 # Translated half a cell to the negative so the hexagons are centred
 
 def draw_scalar_field_rects(screen, field, spectrum):

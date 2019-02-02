@@ -6,7 +6,7 @@ from scalarfield import *
 from graphics_backend import *
 from wavedata import *
 from wavetools import toolbar
-from tools import FreeDrawTool
+import tools
 
 import pygame
 from pygame import Vector2, key
@@ -54,14 +54,13 @@ while not done:
 
     for event in pygame.event.get():
         if event.type == pygame.MOUSEBUTTONDOWN:
-            controlled = pygame.key.get_pressed()[pygame.K_LCTRL] or pygame.key.get_pressed()[pygame.K_RCTRL]
             if event.button == 4:
-                if controlled:
+                if tools.controlling() or tools.shifting():
                     toolbar.tools[toolbar.current].mouse_scroll(+1)
                 else:
                     toolbar.increment_selection()
             elif event.button == 5:
-                if controlled:
+                if tools.controlling() or tools.shifting():
                     toolbar.tools[toolbar.current].mouse_scroll(-1)
                 else:
                     toolbar.decrement_selection()
@@ -78,9 +77,15 @@ while not done:
             if event.key == pygame.K_r:
                 displacement.clear()
                 velocity.clear()
+                wave_speed.reset()
+                csquared.reset()
                 displacement.mask.clear()
             if event.key == pygame.K_b:
                 blur = not blur
+            if event.key == pygame.K_EQUALS:
+                toolbar.tools[toolbar.current].mouse_scroll(+1)
+            if event.key == pygame.K_MINUS:
+                toolbar.tools[toolbar.current].mouse_scroll(-1)
         if event.type == pygame.QUIT:
             done = True
 

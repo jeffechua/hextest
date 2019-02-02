@@ -7,7 +7,7 @@ from wavedata import grid_a, grid_b
 screen_width = 1000
 screen_height = 700
 
-hex_radius = 5
+hex_radius = 7
 hex_height = 2 * hex_radius
 hex_width = 2 * hex_radius * hexvex.sin60
 cell_parameter = hex_width

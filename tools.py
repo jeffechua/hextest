@@ -4,7 +4,7 @@ import math
 from hexvex import Vex, dirs
 from pygame import key
 
-def none(arg): pass #empty function for if we don't want to define it
+def none(arg0 = None, arg1 = None, arg2 = None): pass #empty function for if we don't want to define it
 
 def controlling():
     return pygame.key.get_pressed()[pygame.K_LCTRL] or pygame.key.get_pressed()[pygame.K_RCTRL]
@@ -107,7 +107,7 @@ class FreeDrawTool(ToolBase):
                 for k in range(6):
                     points.append(p2[k] + Vex(i,j).Vector2() * cell_parameter + (w/2, h/2))
                 pygame.draw.polygon(brush, (50,50,50), points)
-        if self.cont_drag:
+        if self.cont_drag and (controlling() or shifting()):
             if controlling():
                 axis = self.get_traversal_axis(tile)
                 overlay = pygame.Surface(screen.get_size())
@@ -152,3 +152,47 @@ class FreeDrawTool(ToolBase):
 
         return traversed
 
+class SetValueDrawTool(FreeDrawTool):
+
+    # unlike FreeDrawTool, SetValueDrawTool (obviously) also passes the current value setting to left_draw and right_draw
+    # which is why we need a wrapper to adapt the left_draw and right_draw functionality of FreeDrawTool
+    def __init__(self, read_source, default_value, minval, maxval, interval, left_draw = none, right_draw = none):
+        self.read_source = read_source
+        self.value = default_value
+        self.min = minval
+        self.max = maxval
+        self.interval = interval
+        self.numbers = list()
+
+        for n in range(minval, maxval+interval, interval):
+            rendered = font.render(str(n), (255,255,255), size = hex_width)
+            self.numbers.append((rendered[0], pygame.Vector2(rendered[1].w/2, rendered[1].h/2)))
+
+        self.left_draw_raw = left_draw
+        self.right_draw_raw = right_draw
+        
+        FreeDrawTool.__init__(self, self.left_draw_wrapper, self.right_draw_wrapper)
+        self.mouse_scroll = self.scroll
+    
+    def left_draw_wrapper(self, tile): #left_draw but *better*
+        self.left_draw_raw(tile, self.value)
+
+    def right_draw_wrapper(self, tile): #right_draw but *better*
+        self.right_draw_raw(tile, self.value)
+
+    def scroll(self, delta):
+        if controlling():
+            self.change_brush_size(delta)
+        else:
+            self.value = clamp(self.value + self.interval * delta, self.min, self.max)
+
+    def overlay_selected(self, tile):
+        FreeDrawTool.overlay_selected(self, tile)
+        for i in range(self.read_source.a):
+            for j in range(self.read_source.b):
+                if self.read_source.mask.hexes[i][j]:
+                    text = self.numbers[round((self.read_source.hexes[i][j]-self.min)/self.interval)]
+                    screen.blit(text[0], hex_to_screen_space(Vex(i,j)) - text[1])
+        mouse_surf = font.render(str(self.value), (0,0,0), (255,255,255), size = 40 if shifting() else 20)
+        pos = pygame.mouse.get_pos()
+        screen.blit(mouse_surf[0], (pos[0] - mouse_surf[1].w, pos[1] - mouse_surf[1].h))

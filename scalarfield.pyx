@@ -10,6 +10,7 @@ class ScalarHexField:
         cdef int int_b = b #converting to cdef int gives ~5% performance improvement
         self.a = int_a
         self.b = int_b
+        self.default_value = default_value
         cdef float float_default = default_value #gives a small 5-10% performance improvement
         for i in range(a):
             self.hexes[i] = [float_default]*b
@@ -141,7 +142,9 @@ class ScalarHexField:
             if self.mask.hexes[self.a-1][j] and self.mask.hexes[self.a-1][j+1]:
                 destination.hexes[self.a-1][j] += self.hexes[self.a-1][j+1]
                 destination.hexes[self.a-1][j+1] += self.hexes[self.a-1][j]
-        destination *= magic_number * csquared
+        for i in range(self.a):
+            for j in range(self.b):
+                destination.hexes[i][j] *= magic_number * csquared.hexes[i][j]
 
 
 
@@ -150,6 +153,11 @@ class ScalarHexField:
             for j in range(self.b):
                 self.hexes[i][j] = 0
     
+    def reset(self):
+        for i in range(self.a):
+            for j in range(self.b):
+                self.hexes[i][j] = self.default_value
+
     def clone(self, other, multiplier = 1):
         for i in range(self.a):
             for j in range(self.b):

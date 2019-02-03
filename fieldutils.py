@@ -4,19 +4,19 @@ import math
 class HexMask:
 
     #ONLY flag hexagonal if a = b
-    def __init__(self, a, b, hexagonal = False):
+    def __init__(self, a, b, hexagonal = False, default = True):
         self.a = a
         self.b = b
         self.hexagonal = hexagonal
         self.hexes = [None]*a
         for i in range(a):
-            self.hexes[i] = [True]*b
+            self.hexes[i] = [default]*b
         if hexagonal:
             halfway = math.floor(a/2)
             for i in range(halfway, a):
                 for j in range(0, i-halfway):
-                    self.hexes[i][j] = False
-                    self.hexes[j][i] = False
+                    self.hexes[i][j] = not default
+                    self.hexes[j][i] = not default
 
     def __iand__(self, other):
         for i in range(self.a):

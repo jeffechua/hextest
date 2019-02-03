@@ -72,6 +72,12 @@ class ScalarHexField:
                 if self.mask.hexes[i][j]:
                     destination.hexes[i][j] += self.hexes[i][j] * multiplier
 
+    def multiply_by_term(self, other):
+        for i in range(self.a):
+            for j in range(self.b):
+                if other.mask.hexes[i][j] and self.mask.hexes[i][j]:
+                    self.hexes[i][j] *= other.hexes[i][j]
+
     def grad(self, destination = None):
         gradField = destination
         if gradField == None:

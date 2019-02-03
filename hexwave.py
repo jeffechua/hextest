@@ -33,7 +33,7 @@ ten_draws_time_cost = 0
 avg_draw_time_cost = 0
 
 stutter_counter = 0
-stutter_frequency = 0
+stutter_frequency = 0,
 
 spectrum = Spectrum(-50, 50, pygame.Color(0, 0, 255), pygame.Color(255, 0, 0))
 blur = False
@@ -79,6 +79,8 @@ while not done:
                 velocity.clear()
                 wave_speed.reset()
                 csquared.reset()
+                damping.reset()
+                damp_multiplier.reset()
                 displacement.mask.clear()
             if event.key == pygame.K_b:
                 blur = not blur

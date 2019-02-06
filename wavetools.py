@@ -43,10 +43,10 @@ def unset_damping(tile, value): # set to "default" of 0
     damping.hexes[tile.a][tile.b] = 0
     damp_multiplier.hexes[tile.a][tile.b] = 1
 
-draw_velocity_tool = FreeDrawTool(set_positive, set_negative)
-draw_velocity_icon = pygame.Surface((50,50))
-draw_velocity_icon.fill((0,0,255))
-pygame.draw.polygon(draw_velocity_icon, (255,0,0), [(0,0),(30,0),(20,50),(0,50)])
+draw_displacement_tool = FreeDrawTool(set_positive, set_negative)
+draw_displacement_icon = pygame.Surface((50,50))
+draw_displacement_icon.fill((0,0,255))
+pygame.draw.polygon(draw_displacement_icon, (255,0,0), [(0,0),(30,0),(20,50),(0,50)])
 
 draw_mask_tool = FreeDrawTool(mask, unmask)
 draw_mask_icon = pygame.Surface((50,50))
@@ -59,4 +59,4 @@ set_speed_icon = create_icon_from_text("c")
 set_damping_tool = SetValueDrawTool(damping, 3, 0, 9, 1, left_draw = set_damping, right_draw = unset_damping)
 set_damping_icon = create_icon_from_text("γ")
 
-toolbar = Toolbar([draw_velocity_icon, draw_mask_icon, set_speed_icon, set_damping_icon], [draw_velocity_tool, draw_mask_tool, set_speed_tool, set_damping_tool])
+toolbar = Toolbar([draw_displacement_icon, draw_mask_icon, set_speed_icon, set_damping_icon], [draw_displacement_tool, draw_mask_tool, set_speed_tool, set_damping_tool])

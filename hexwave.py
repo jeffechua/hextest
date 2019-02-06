@@ -121,7 +121,8 @@ while not done:
     if displacement.valid_hex_v(tile):
         print_topleft("ψ: " + str(displacement.hexes[tile.a][tile.b]), 10, 10)
         print_topleft("ψ': " + str(velocity.hexes[tile.a][tile.b]), 10, 30)
-        print_topleft("ψ'': " + str(acceleration.hexes[tile.a][tile.b]), 10, 50)
+        print_topleft("ψ'': " + str(laplace.hexes[tile.a][tile.b] * csquared.hexes[tile.a][tile.b]), 10, 50)
+
     print_bottomleft("simulation framerate: " + str(sim_framerate), 10, -10)
     print_bottomleft("draw framerate: " + str(draw_framerate), 10, -30)
     print_bottomleft("stutter frequency: " + str(stutter_frequency), 10, -50)

@@ -1,6 +1,7 @@
 from hexvex import Vex, dirs
 import math, fieldutils
 from vectorfield import *
+from collections import Sequence
 
 class ScalarHexField:
 
@@ -115,10 +116,10 @@ class ScalarHexField:
                         destination.hexes[maximum.a+dirs[n].a][maximum.b+dirs[n].b] += delta[n] * controller * step
                         destination.hexes[maximum.a][maximum.b] -= delta[n] * controller * step
     
-    #numerically evaluates the wave equation for d2u/dt2, which is written to [destination]
-    def evaluate_wave_equation(self, destination, csquared):
+    #numerically evaluates the laplacian, which is written to [destination]
+    def laplace(self, destination):
         magic_number = 1 + 2 / math.sqrt(3)
-        # here we geometrically approximate d2u/dx2 as (d2u/da2 + d2u/db2)/sqrt(3)
+        # If we map c to y, we can geometrically approximate d2u/dx2 as (d2u/da2 + d2u/db2)/sqrt(3)
         # we can also change the x and y axes and blend b and c, or c and a,
         # and if we average the (d2u/dx2 + d2u/dy2) obtained from all three axes picks we get
         #   (d2u/da2 + d2u/db2 + d3u/db2)*(1 + 2/(sqrt(3))
@@ -150,7 +151,7 @@ class ScalarHexField:
                 destination.hexes[self.a-1][j+1] += self.hexes[self.a-1][j]
         for i in range(self.a):
             for j in range(self.b):
-                destination.hexes[i][j] *= magic_number * csquared.hexes[i][j]
+                destination.hexes[i][j] *= magic_number
 
 
 

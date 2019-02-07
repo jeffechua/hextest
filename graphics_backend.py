@@ -145,6 +145,18 @@ def draw_scalar_field_back_hexes(screen, field, spectrum):
                 draw_back_hexagon(hex_to_screen_space(hexvex.Vex(i, j)), spectrum.retrieve(field.hexes[i][j]))
                 # Translated half a cell to the negative so the hexagons are centred
 
+def draw_mask_hexes(screen, mask, color):
+    for i in range(grid_a):
+        for j in range(grid_b):
+            if mask.hexes[i][j]:
+                draw_hexagon(hex_to_screen_space(hexvex.Vex(i, j)), color)
+
+def draw_mask_back_hexes(screen, mask, color):
+    for i in range(grid_a):
+        for j in range(grid_b):
+            if mask.hexes[i][j]:
+                draw_back_hexagon(hex_to_screen_space(hexvex.Vex(i, j)), color)
+
 def draw_scalar_field_rects(screen, field, spectrum):
     for i in range(grid_a):
         for j in range(grid_b):

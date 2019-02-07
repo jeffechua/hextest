@@ -41,6 +41,7 @@ blur = False
 def redraw():
     screen.fill((0, 0, 0), game_rect)
     draw_scalar_field_back_hexes(screen, density, spectrum)
+    draw_mask_hexes(screen, insulation, (255,255,0))
     if blur:
         screen.blit(pygame.transform.smoothscale(pygame.transform.smoothscale(screen, (int(screen_width/10),int(screen_height/10))), (int(screen_width), int(screen_height))), (0,0))
 
@@ -76,7 +77,7 @@ while not done:
             if event.key == pygame.K_r:
                 density.clear()
                 density.mask.clear()
-                diffusivity.reset()
+                update_insulation_all()
             if event.key == pygame.K_b:
                 blur = not blur
             if event.key == pygame.K_EQUALS:
@@ -115,8 +116,9 @@ while not done:
     redraw()
     if density.valid_hex_v(tile):
         print_topleft("ψ: " + str(density.hexes[tile.a][tile.b]), 10, 10)
-        print_topleft("ψ': " + str(laplace.hexes[tile.a][tile.b] * diffusivity.hexes[tile.a][tile.b]), 10, 30)
+        print_topleft("ψ': " + str(laplace.hexes[tile.a][tile.b] * diffusivity,), 10, 30)
 
+    print_topright("net mass: " + str(density.sum()), -10, 10)
     print_bottomleft("simulation framerate: " + str(sim_framerate), 10, -10)
     print_bottomleft("draw framerate: " + str(draw_framerate), 10, -30)
     print_bottomleft("stutter frequency: " + str(stutter_frequency), 10, -50)

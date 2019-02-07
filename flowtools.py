@@ -19,17 +19,18 @@ def set_positive(tile): set_density(tile, 50)
 def set_negative(tile): set_density(tile, 0)
 
 def mask(tile):
-    if density.valid_hex_v(tile): density.mask.hexes[tile.a][tile.b] = False
+    if density.valid_hex_v(tile):
+        density.mask.hexes[tile.a][tile.b] = False
+        update_insulation(tile)
+        for n in range(6):
+            update_insulation(tile + dirs[n])
 def unmask(tile):
-    if density.valid_hex_v(tile, True): density.mask.hexes[tile.a][tile.b] = True
+    if density.valid_hex_v(tile, True):
+        density.mask.hexes[tile.a][tile.b] = True
+        update_insulation(tile)
+        for n in range(6):
+            update_insulation(tile + dirs[n])
 
-def set_diffusivity(tile, value):
-    if not diffusivity.valid_hex_v(tile): return
-    diffusivity.hexes[tile.a][tile.b] = value
-
-def unset_diffusivity(tile, value): # set to "default" of 9
-    if not diffusivity.valid_hex_v(tile): return
-    diffusivity.hexes[tile.a][tile.b] = 9
 
 
 draw_density_tool = FreeDrawTool(set_positive, set_negative)
@@ -42,8 +43,5 @@ draw_mask_icon = pygame.Surface((50,50))
 draw_mask_icon.fill((0,0,0))
 pygame.draw.polygon(draw_mask_icon, (255,0,255), [(0,0),(30,0),(20,50),(0,50)])
 
-set_diffusivity_tool = SetValueDrawTool(diffusivity, 9, 1, 9, 1, left_draw = set_diffusivity, right_draw = unset_diffusivity)
-set_diffusivity_icon = create_icon_from_text("α")
 
-
-toolbar = Toolbar([draw_density_icon, draw_mask_icon, set_diffusivity_icon], [draw_density_tool, draw_mask_tool, set_diffusivity_tool])
+toolbar = Toolbar([draw_density_icon, draw_mask_icon], [draw_density_tool, draw_mask_tool])

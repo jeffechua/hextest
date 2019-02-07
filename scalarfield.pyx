@@ -79,6 +79,13 @@ class ScalarHexField:
                 if other.mask.hexes[i][j] and self.mask.hexes[i][j]:
                     self.hexes[i][j] *= other.hexes[i][j]
 
+    def sum(self):
+        count = 0
+        for i in range(self.a):
+            for j in range(self.b):
+                count += self.hexes[i][j]
+        return count
+
     def grad(self, destination = None):
         gradField = destination
         if gradField == None:
@@ -152,7 +159,6 @@ class ScalarHexField:
         for i in range(self.a):
             for j in range(self.b):
                 destination.hexes[i][j] *= magic_number
-
 
 
     def clear(self):

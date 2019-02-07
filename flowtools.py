@@ -14,7 +14,9 @@ def create_icon_from_text(text):
     return new_icon
 
 def set_density(tile, value):
-    if density.valid_hex_v(tile): density.hexes[tile.a][tile.b] = value
+    if density.valid_hex_v(tile):
+        numbers.target_net_mass += value - density.get_hex(tile)
+        density.hexes[tile.a][tile.b] = value
 def set_positive(tile): set_density(tile, 50)
 def set_negative(tile): set_density(tile, 0)
 

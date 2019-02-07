@@ -74,10 +74,12 @@ while not done:
                 paused = not paused
             if event.key == pygame.K_c:
                 density.clear()
+                numbers.target_net_mass = 0
             if event.key == pygame.K_r:
                 density.clear()
                 density.mask.clear()
                 update_insulation_all()
+                numbers.target_net_mass = 0
             if event.key == pygame.K_b:
                 blur = not blur
             if event.key == pygame.K_EQUALS:
@@ -99,7 +101,7 @@ while not done:
             t = pygame.time.get_ticks()
             simulate_step()
             ten_sims_time_cost += pygame.time.get_ticks() - t
-            net_simulated_time += timestep * 1000.0 # timestep is in s, ticks is in ms
+            net_simulated_time += real_timestep * 1000.0 # timestep is in s, ticks is in ms
             sim_step_counter += 1
             if sim_step_counter == 10:
                 sim_step_counter = 0
@@ -118,7 +120,9 @@ while not done:
         print_topleft("ψ: " + str(density.hexes[tile.a][tile.b]), 10, 10)
         print_topleft("ψ': " + str(laplace.hexes[tile.a][tile.b] * diffusivity,), 10, 30)
 
-    print_topright("net mass: " + str(density.sum()), -10, 10)
+    print_topright("net mass: " + str(numbers.net_mass), -10, 10)
+    print_topright("target net mass: " + str(numbers.target_net_mass), -10, 30)
+    print_topright("laplace sum: " + str(numbers.laplace_sum), -10, 50)
     print_bottomleft("simulation framerate: " + str(sim_framerate), 10, -10)
     print_bottomleft("draw framerate: " + str(draw_framerate), 10, -30)
     print_bottomleft("stutter frequency: " + str(stutter_frequency), 10, -50)

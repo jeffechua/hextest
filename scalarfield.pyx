@@ -83,7 +83,8 @@ class ScalarHexField:
         count = 0
         for i in range(self.a):
             for j in range(self.b):
-                count += self.hexes[i][j]
+                if self.mask.hexes[i][j]:
+                    count += self.hexes[i][j]
         return count
 
     def grad(self, destination = None):
@@ -156,6 +157,39 @@ class ScalarHexField:
             if self.mask.hexes[self.a-1][j] and self.mask.hexes[self.a-1][j+1]:
                 destination.hexes[self.a-1][j] += self.hexes[self.a-1][j+1]
                 destination.hexes[self.a-1][j+1] += self.hexes[self.a-1][j]
+        for i in range(self.a):
+            for j in range(self.b):
+                destination.hexes[i][j] *= magic_number
+
+    #laplace, but ignores mask
+    def laplace_indiscriminate(self, destination):
+        magic_number = 1 + 2 / math.sqrt(3)
+        # If we map c to y, we can geometrically approximate d2u/dx2 as (d2u/da2 + d2u/db2)/sqrt(3)
+        # we can also change the x and y axes and blend b and c, or c and a,
+        # and if we average the (d2u/dx2 + d2u/dy2) obtained from all three axes picks we get
+        #   (d2u/da2 + d2u/db2 + d3u/db2)*(1 + 2/(sqrt(3))
+        # then we approximate d2u/da2 at p as:
+        #   d2u/da2 = (u(p+a) - u(p)) - (u(p) - u(p-a)) = u(p+a) + u(p-a) - 2 u(p)
+        # so we get
+        #   (d2u/dx2 + d2u/dy2) = (u(p+a) + u(p-a) +
+        #                          u(p+b) - u(p-b) +
+        #                          u(p+c) - u(p-c) 
+        #                        - 6 u(p)) * (1 + 2/(sqrt(3))
+        destination.clone(self, -6)
+        # Take care of most of the area
+        for i in range(self.a-1):
+            for j in range(self.b-1):
+                for n in range(3):
+                    i2 = i + dirs[n].a
+                    j2 = j + dirs[n].b
+                    destination.hexes[i][j] += self.hexes[i2][j2]
+                    destination.hexes[i2][j2] += self.hexes[i][j]
+        for i in range(self.a-1): #inteconnections between tiles on right edge
+            destination.hexes[i][self.b-1] += self.hexes[i+1][self.b-1]
+            destination.hexes[i+1][self.b-1] += self.hexes[i][self.b-1]
+        for j in range(self.b-1): #interconnections between tiles on left edge
+            destination.hexes[self.a-1][j] += self.hexes[self.a-1][j+1]
+            destination.hexes[self.a-1][j+1] += self.hexes[self.a-1][j]
         for i in range(self.a):
             for j in range(self.b):
                 destination.hexes[i][j] *= magic_number

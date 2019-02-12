@@ -2,7 +2,6 @@ import hexvex
 import pygame
 import math
 from pygame import freetype
-from wavedata import grid_a, grid_b
 
 screen_width = 1000
 screen_height = 700
@@ -23,8 +22,10 @@ half_tile = hexvex.Vex(0.5, 0.5)
 game_rect = pygame.Rect(80, 0, screen_width - 80, screen_height)
 sidebar_rect = pygame.Rect(0, 0, 80, screen_height)
 
-grid_origin = game_rect.center - \
-    hexvex.Vex(grid_a-1, grid_b-1).Vector2() / 2 * cell_parameter
+def gen_origin(a, b):
+    global grid_origin
+    grid_origin = game_rect.center - \
+        hexvex.Vex(a-1, b-1).Vector2() / 2 * cell_parameter
 # Translated half a cell to the positive since hexagons are centred
 
 screen = pygame.display.set_mode((screen_width, screen_height))
@@ -132,48 +133,48 @@ def clamp(value, minvalue, maxvalue):
 
 
 def draw_scalar_field_hexes(screen, field, spectrum):
-    for i in range(grid_a):
-        for j in range(grid_b):
+    for i in range(field.a):
+        for j in range(field.b):
             if field.valid_hex(i,j):
                 draw_hexagon(hex_to_screen_space(hexvex.Vex(i, j)), spectrum.retrieve(field.hexes[i][j]))
                 # Translated half a cell to the negative so the hexagons are centred
 
 def draw_scalar_field_back_hexes(screen, field, spectrum):
-    for i in range(grid_a):
-        for j in range(grid_b):
+    for i in range(field.a):
+        for j in range(field.b):
             if field.valid_hex(i,j):
                 draw_back_hexagon(hex_to_screen_space(hexvex.Vex(i, j)), spectrum.retrieve(field.hexes[i][j]))
                 # Translated half a cell to the negative so the hexagons are centred
 
 def draw_mask_hexes(screen, mask, color):
-    for i in range(grid_a):
-        for j in range(grid_b):
+    for i in range(mask.a):
+        for j in range(mask.b):
             if mask.hexes[i][j]:
                 draw_hexagon(hex_to_screen_space(hexvex.Vex(i, j)), color)
 
 def draw_mask_back_hexes(screen, mask, color):
-    for i in range(grid_a):
-        for j in range(grid_b):
+    for i in range(mask.a):
+        for j in range(mask.b):
             if mask.hexes[i][j]:
                 draw_back_hexagon(hex_to_screen_space(hexvex.Vex(i, j)), color)
 
 def draw_scalar_field_rects(screen, field, spectrum):
-    for i in range(grid_a):
-        for j in range(grid_b):
+    for i in range(field.a):
+        for j in range(field.b):
             if field.valid_hex(i,j):
                 pos = hex_to_screen_space(hexvex.Vex(i, j))
                 pygame.draw.rect(screen, spectrum.retrieve(field.hexes[i][j]), pygame.Rect(int(pos.x-hex_draw_radius), int(pos.y-hex_draw_radius), int(hex_draw_radius*2), int(hex_draw_radius*2)))
 
 def draw_scalar_field_circles_color(screen, field, spectrum):
-    for i in range(grid_a):
-        for j in range(grid_b):
+    for i in range(field.a):
+        for j in range(field.b):
             if field.valid_hex(i,j):
                 pos = hex_to_screen_space(hexvex.Vex(i, j))
                 pygame.draw.circle(screen, spectrum.retrieve(field.hexes[i][j]), (int(pos.x), int(pos.y)), int(hex_draw_radius))
 
 def draw_scalar_field_circles_radii(screen, field, scale_start, scale_end, max_radius, color=(0, 0, 0)):
-    for i in range(grid_a):
-        for j in range(grid_b):
+    for i in range(field.a):
+        for j in range(field.b):
             if field.valid_hex(i,j):
                 radius = max_radius * \
                     (field.hexes[i][j]-scale_start) / (scale_end-scale_start)
@@ -183,8 +184,8 @@ def draw_scalar_field_circles_radii(screen, field, scale_start, scale_end, max_r
 
 
 def draw_vector_field(screen, field, max_size_magnitude):
-    for i in range(grid_a):
-        for j in range(grid_b):
+    for i in range(field.a):
+        for j in range(field.b):
             if field.valid_hex(i,j):
                 # (magnitude, argument)
                 polar = field.hexes[i][j].Vector2().as_polar()

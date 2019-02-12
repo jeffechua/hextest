@@ -3,7 +3,7 @@ from fieldutils import HexMask
 
 grid_a = 61
 grid_b = 61
-timescale = 0.5
+timescale = 1
 simulation_frequency = 30 #in Hz
 simulation_timestep = 1 / simulation_frequency
 real_timestep = 1 / simulation_frequency / timescale

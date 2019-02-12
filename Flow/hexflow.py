@@ -1,3 +1,6 @@
+import sys
+sys.path.append(sys.path[0][:-len("/Flow")])
+
 import pyximport
 pyximport.install()
 
@@ -34,6 +37,8 @@ avg_draw_time_cost = 0
 
 stutter_counter = 0
 stutter_frequency = 0,
+
+gen_origin(grid_a, grid_b)
 
 spectrum = Spectrum(0, 50, pygame.Color(0, 0, 255), pygame.Color(255, 0, 0))
 blur = False

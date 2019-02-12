@@ -1,3 +1,6 @@
+import sys
+sys.path.append(sys.path[0][:-len("/Flow")])
+
 import pyximport
 pyximport.install()
 
@@ -37,6 +40,8 @@ stutter_frequency = 0,
 
 spectrum = Spectrum(-50, 50, pygame.Color(0, 0, 255), pygame.Color(255, 0, 0))
 blur = False
+
+gen_origin(grid_a, grid_b)
 
 def redraw():
     screen.fill((0, 0, 0), game_rect)

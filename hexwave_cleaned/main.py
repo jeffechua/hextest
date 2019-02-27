@@ -61,12 +61,12 @@ while not done:
                 if tools.controlling() or tools.shifting():
                     toolbar.tools[toolbar.current].mouse_scroll(+1)
                 else:
-                    toolbar.increment_selection()
+                    toolbar.decrement_selection()
             elif event.button == 5:
                 if tools.controlling() or tools.shifting():
                     toolbar.tools[toolbar.current].mouse_scroll(-1)
                 else:
-                    toolbar.decrement_selection()
+                    toolbar.increment_selection()
             else:
                 toolbar.tools[toolbar.current].mouse_down(tile)
         if event.type == pygame.MOUSEBUTTONUP:

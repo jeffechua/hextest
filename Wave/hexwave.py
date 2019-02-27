@@ -1,5 +1,5 @@
 import sys
-sys.path.append(sys.path[0][:-len("/Flow")])
+sys.path.append(sys.path[0][:-len("/Wave")])
 
 import pyximport
 pyximport.install()
